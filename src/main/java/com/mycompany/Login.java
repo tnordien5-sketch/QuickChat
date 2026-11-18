@@ -1,4 +1,4 @@
-package com.mycompany.login;
+package com.mycompany;
 
 public class Login {
     private String firstName;
