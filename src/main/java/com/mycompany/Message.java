@@ -2,6 +2,7 @@ package com.mycompany;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,30 +11,46 @@ import java.util.Random;
 public class Message {
     private String messageID;
     private int messageNumber;
+    private String sender;
     private String recipient;
     private String messageText;
     private String messageHash;
     private String flag = "";
 
-    // Lists shared by all messages while the program runs
+    // The five arrays from the brief
     private static ArrayList<Message> sentMessages = new ArrayList<>();
     private static ArrayList<Message> disregardedMessages = new ArrayList<>();
     private static ArrayList<Message> storedMessages = new ArrayList<>();
+    private static ArrayList<String> messageHashes = new ArrayList<>();
+    private static ArrayList<String> messageIDs = new ArrayList<>();
+
+    // The logged-in user's number, copied onto every new message
+    private static String currentSender = "Unknown";
 
     public Message(String messageID, int messageNumber, String recipient, String messageText) {
         this.messageID = messageID;
         this.messageNumber = messageNumber;
+        this.sender = currentSender;
         this.recipient = recipient;
         this.messageText = messageText;
         this.messageHash = createMessageHash();
     }
 
+    public static void setCurrentSender(String senderNumber) { currentSender = senderNumber; }
+
     public String getMessageID() { return messageID; }
     public int getMessageNumber() { return messageNumber; }
+    public String getSender() { return sender; }
     public String getRecipient() { return recipient; }
     public String getMessageText() { return messageText; }
     public String getMessageHash() { return messageHash; }
     public String getFlag() { return flag; }
+
+    public static ArrayList<Message> getSentMessages() { return sentMessages; }
+    public static ArrayList<Message> getDisregardedMessages() { return disregardedMessages; }
+    public static ArrayList<Message> getStoredMessages() { return storedMessages; }
+    public static ArrayList<String> getMessageHashes() { return messageHashes; }
+    public static ArrayList<String> getMessageIDs() { return messageIDs; }
 
     // Makes a random 10-digit ID
     public static String generateMessageID() {
@@ -48,6 +65,11 @@ public class Message {
     // The ID must be no more than 10 characters
     public boolean checkMessageID() {
         return messageID.length() <= 10;
+    }
+
+    // Used by the "Message ID is created" test
+    public String messageIDGenerated() {
+        return "Message ID generated: " + messageID;
     }
 
     // Reuses the phone check from Part 1
@@ -91,22 +113,41 @@ public class Message {
                 + firstWord + lastWord).toUpperCase();
     }
 
+    // Adds the hash and ID of every message in a list to the two index arrays
+    private static void addHashesAndIDs(ArrayList<Message> list) {
+        for (int i = 0; i < list.size(); i++) {
+            messageHashes.add(list.get(i).messageHash);
+            messageIDs.add(list.get(i).messageID);
+        }
+    }
+
+    // Rebuilds the hash and ID arrays so they always match the three message lists
+    private static void rebuildIndexLists() {
+        messageHashes = new ArrayList<>();
+        messageIDs = new ArrayList<>();
+        addHashesAndIDs(sentMessages);
+        addHashesAndIDs(disregardedMessages);
+        addHashesAndIDs(storedMessages);
+    }
+
     // choice 1 = send, 2 = disregard, 3 = store
     public String sentMessage(int choice) {
+        String result = "Invalid choice.";
         if (choice == 1) {
             flag = "Sent";
             sentMessages.add(this);
-            return "Message successfully sent.";
+            result = "Message successfully sent.";
         } else if (choice == 2) {
             flag = "Disregard";
             disregardedMessages.add(this);
-            return "Press 0 to delete the message.";
+            result = "Press 0 to delete the message.";
         } else if (choice == 3) {
             flag = "Stored";
             storedMessages.add(this);
-            return "Message successfully stored.";
+            result = "Message successfully stored.";
         }
-        return "Invalid choice.";
+        rebuildIndexLists();
+        return result;
     }
 
     // Shows every sent message: ID, hash, recipient, message
@@ -139,14 +180,31 @@ public class Message {
         }
     }
 
+    // Reads messages.json back into the stored messages array
+    // Reference: Google (n.d.) Gson. Available at: https://github.com/google/gson (Accessed: 18 November 2026).
+    public static void loadStoredMessages() {
+        storedMessages = new ArrayList<>();
+        Gson gson = new Gson();
+        try {
+            FileReader reader = new FileReader("messages.json");
+            Message[] loaded = gson.fromJson(reader, Message[].class);
+            reader.close();
+            if (loaded != null) {
+                for (int i = 0; i < loaded.length; i++) {
+                    storedMessages.add(loaded[i]);
+                }
+            }
+        } catch (IOException e) {
+            // No file yet, so there is nothing to load
+        }
+        rebuildIndexLists();
+    }
+
     // Used by the unit tests so each test starts fresh
     public static void clearAll() {
-        sentMessages.clear();
-        disregardedMessages.clear();
-        storedMessages.clear();
-    }
-    // Used by the "Message ID is created" test
-    public String messageIDGenerated() {
-        return "Message ID generated: " + messageID;
+        sentMessages = new ArrayList<>();
+        disregardedMessages = new ArrayList<>();
+        storedMessages = new ArrayList<>();
+        rebuildIndexLists();
     }
 }
