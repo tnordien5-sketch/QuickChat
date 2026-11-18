@@ -145,4 +145,8 @@ public class Message {
         disregardedMessages.clear();
         storedMessages.clear();
     }
+    // Used by the "Message ID is created" test
+    public String messageIDGenerated() {
+        return "Message ID generated: " + messageID;
+    }
 }
