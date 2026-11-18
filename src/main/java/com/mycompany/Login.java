@@ -41,7 +41,7 @@ public class Login {
     }
 
     // Cell number: starts with +, country code, then up to 10 digits
-    // Reference: (add your reference here, see note below)
+        // Reference: Oracle (n.d.) Lesson: Regular Expressions. The Java Tutorials. Available at: https://docs.oracle.com/javase/tutorial/essential/regex/ (Accessed: 18 November 2026).
     public boolean checkCellPhoneNumber() {
         return cellNumber.matches("^\\+\\d{1,3}\\d{1,10}$");
     }
