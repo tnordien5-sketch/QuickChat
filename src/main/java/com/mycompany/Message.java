@@ -276,4 +276,48 @@ public class Message {
         }
         return found;
     }
+    // Looks through one list and removes the message with this hash.
+    // Returns the removed message, or null if it was not in the list.
+    private static Message removeFromList(ArrayList<Message> list, String hash) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).messageHash.equals(hash)) {
+                Message removed = list.get(i);
+                list.remove(i);
+                return removed;
+            }
+        }
+        return null;
+    }
+
+    // Menu option e: delete a message using its hash
+    public static String deleteByHash(String hash) {
+        Message removed = removeFromList(storedMessages, hash);
+        if (removed == null) {
+            removed = removeFromList(sentMessages, hash);
+        }
+        if (removed == null) {
+            removed = removeFromList(disregardedMessages, hash);
+        }
+        if (removed == null) {
+            return "Message hash not found.";
+        }
+        rebuildIndexLists();
+        return "Message: \"" + removed.messageText + "\" successfully deleted.";
+    }
+
+    // Menu option f: a report of every sent message
+    public static String displayReport() {
+        if (sentMessages.size() == 0) {
+            return "There are no sent messages.";
+        }
+        String result = "=== Sent Messages Report ===\n";
+        for (int i = 0; i < sentMessages.size(); i++) {
+            Message m = sentMessages.get(i);
+            result += "Message ID: " + m.messageID + "\n"
+                    + "Message Hash: " + m.messageHash + "\n"
+                    + "Recipient: " + m.recipient + "\n"
+                    + "Message: " + m.messageText + "\n\n";
+        }
+        return result;
+    }
 }
