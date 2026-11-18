@@ -1,5 +1,6 @@
 package com.mycompany;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -52,6 +53,8 @@ public class Main {
 
         // Only logged-in users may send messages
         if (loggedIn) {
+            Message.setCurrentSender(login.getCellNumber());
+            Message.loadStoredMessages();
             runQuickChat(input);
         }
     }
@@ -79,6 +82,7 @@ public class Main {
             System.out.println("1) Send Messages");
             System.out.println("2) Show recently sent messages");
             System.out.println("3) Quit");
+            System.out.println("4) Stored Messages");
             int choice = readNumber(input, "Choose an option: ");
 
             if (choice == 1) {
@@ -120,6 +124,7 @@ public class Main {
                         System.out.println("Recipient: " + m.getRecipient());
                         System.out.println("Message: " + m.getMessageText());
                     } else if (action == 3) {
+                        System.out.println("Message Hash: " + m.getMessageHash());
                         Message.storeMessage();
                     }
                     entered++;
@@ -128,11 +133,66 @@ public class Main {
                 System.out.println("Coming Soon.");
             } else if (choice == 3) {
                 running = false;
+            } else if (choice == 4) {
+                storedMessagesMenu(input);
             } else {
-                System.out.println("Please choose 1, 2 or 3.");
+                System.out.println("Please choose 1, 2, 3 or 4.");
             }
         }
 
         System.out.println("Total messages sent: " + Message.returnTotalMessages());
+    }
+
+    // The sub-menu for option 4
+    private static void storedMessagesMenu(Scanner input) {
+        boolean back = false;
+
+        while (!back) {
+            System.out.println();
+            System.out.println("=== Stored Messages ===");
+            System.out.println("1) Display the sender and recipient of all stored messages");
+            System.out.println("2) Display the longest message");
+            System.out.println("3) Search for a message ID");
+            System.out.println("4) Search for all messages to a recipient");
+            System.out.println("5) Delete a message using the message hash");
+            System.out.println("6) Display a report of all sent messages");
+            System.out.println("7) Back to the main menu");
+            int choice = readNumber(input, "Choose an option: ");
+
+            if (choice == 1) {
+                System.out.println(Message.displaySenderAndRecipient());
+            } else if (choice == 2) {
+                System.out.println("Longest message: " + Message.longestMessage());
+            } else if (choice == 3) {
+                System.out.print("Enter the message ID: ");
+                Message found = Message.findByMessageID(input.nextLine());
+                if (found == null) {
+                    System.out.println("Message ID not found.");
+                } else {
+                    System.out.println("Recipient: " + found.getRecipient());
+                    System.out.println("Message: " + found.getMessageText());
+                }
+            } else if (choice == 4) {
+                System.out.print("Enter the recipient's cell number: ");
+                ArrayList<String> results = Message.searchByRecipient(input.nextLine());
+                if (results.size() == 0) {
+                    System.out.println("No messages found for that recipient.");
+                } else {
+                    for (int i = 0; i < results.size(); i++) {
+                        System.out.println(results.get(i));
+                    }
+                }
+            } else if (choice == 5) {
+                System.out.print("Enter the message hash: ");
+                System.out.println(Message.deleteByHash(input.nextLine()));
+                Message.storeMessage();   // keeps messages.json in step
+            } else if (choice == 6) {
+                System.out.println(Message.displayReport());
+            } else if (choice == 7) {
+                back = true;
+            } else {
+                System.out.println("Please choose a number from 1 to 7.");
+            }
+        }
     }
 }

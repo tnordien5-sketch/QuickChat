@@ -92,4 +92,5 @@ public class Login {
         }
         return "Username or password incorrect, please try again.";
     }
+    public String getCellNumber() { return cellNumber; }
 }
