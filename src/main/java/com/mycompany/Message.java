@@ -207,4 +207,73 @@ public class Message {
         storedMessages = new ArrayList<>();
         rebuildIndexLists();
     }
+    // Joins the sent, disregarded and stored lists into one list for searching
+    private static ArrayList<Message> allMessages() {
+        ArrayList<Message> all = new ArrayList<>();
+        for (int i = 0; i < sentMessages.size(); i++) {
+            all.add(sentMessages.get(i));
+        }
+        for (int i = 0; i < disregardedMessages.size(); i++) {
+            all.add(disregardedMessages.get(i));
+        }
+        for (int i = 0; i < storedMessages.size(); i++) {
+            all.add(storedMessages.get(i));
+        }
+        return all;
+    }
+
+    // Menu option a: sender and recipient of all stored messages
+    public static String displaySenderAndRecipient() {
+        if (storedMessages.size() == 0) {
+            return "There are no stored messages.";
+        }
+        String result = "";
+        for (int i = 0; i < storedMessages.size(); i++) {
+            Message m = storedMessages.get(i);
+            result += "Sender: " + m.sender + " | Recipient: " + m.recipient + "\n";
+        }
+        return result;
+    }
+
+    // Menu option b: the longest message
+    public static String longestMessage() {
+        ArrayList<Message> all = allMessages();
+        if (all.size() == 0) {
+            return "No messages found.";
+        }
+        String longest = all.get(0).messageText;
+        for (int i = 1; i < all.size(); i++) {
+            if (all.get(i).messageText.length() > longest.length()) {
+                longest = all.get(i).messageText;
+            }
+        }
+        return longest;
+    }
+
+    // Menu option c: find one message by its ID (returns null if not found)
+    public static Message findByMessageID(String id) {
+        ArrayList<Message> all = allMessages();
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).messageID.equals(id)) {
+                return all.get(i);
+            }
+        }
+        return null;
+    }
+
+    // Menu option d: every sent or stored message for one recipient
+    public static ArrayList<String> searchByRecipient(String recipientNumber) {
+        ArrayList<String> found = new ArrayList<>();
+        for (int i = 0; i < sentMessages.size(); i++) {
+            if (sentMessages.get(i).recipient.equals(recipientNumber)) {
+                found.add(sentMessages.get(i).messageText);
+            }
+        }
+        for (int i = 0; i < storedMessages.size(); i++) {
+            if (storedMessages.get(i).recipient.equals(recipientNumber)) {
+                found.add(storedMessages.get(i).messageText);
+            }
+        }
+        return found;
+    }
 }
